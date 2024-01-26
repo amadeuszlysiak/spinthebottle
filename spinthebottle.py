@@ -77,7 +77,8 @@ def calculate_speed(target_angle: float, current_angle: float) -> float:
     if distance > 0:
         return max(0.5, distance / 20)
     return 0
-    # Główna funkcja gry
+    
+# Główna funkcja gry
 def main() -> None:
     # Ustawienia początkowe gry
     width: int = 900
