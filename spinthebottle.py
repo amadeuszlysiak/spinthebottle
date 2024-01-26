@@ -77,4 +77,75 @@ def calculate_speed(target_angle: float, current_angle: float) -> float:
     if distance > 0:
         return max(0.5, distance / 20)
     return 0
+    # Główna funkcja gry
+def main() -> None:
+    # Ustawienia początkowe gry
+    width: int = 900
+    height: int = 700
+    screen: pygame.Surface = pygame.display.set_mode((width, height))
+
+    pygame.display.set_caption('Butelka')
+
+    # Ładowanie i skalowanie obrazu butelki
+    bottle_image: pygame.Surface = pygame.image.load('assets/bottle.png')
+    bottle_image: pygame.Surface = pygame.transform.scale(bottle_image, (339, 407))
+    bottle_rect: pygame.Rect = bottle_image.get_rect(center=(width // 2, height // 2))
     
+    # Inicjalizacja zmiennych do kontroli obrotu butelki
+    angle: float = 0
+    speed: float = 0
+    target_angle: int = 0
+    spinning: bool = False
+    winning_player: Optional[int] = None
+
+    # Wczytanie liczby graczy i ich nazw
+    n_players: int = int(input("How many players will be playing? "))
+
+    player_names: List[str] = []
+    for i in range(n_players):
+        player_names.append(input(f"Enter your name player {i}: "))
+
+    # Główna pętla gry
+    running: bool = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: # Wyjście z okienka
+                running: bool = False     # -> pygame.quit() i sys.exit()
+            if event.type == pygame.KEYDOWN: # Jeżeli przyciśniesz jakiś klawisz to butla
+                target_angle: int = random.randint(720, 1440) # zaczyna się kręcić o losowy kąt z przedziału
+                speed: float = target_angle / 20 # Prędkość jest zależna od tego ile butla musi się przekręcić
+                angle: float = 0 # licznik ile już się przekręciła
+                spinning: bool = True
+
+        if spinning:
+            # Aktualizacja obrotu butelki
+            speed: float = calculate_speed(target_angle, angle)
+            angle += speed
+            if target_angle - angle < 0.1: # koniec kręcenia
+                angle: float = float(target_angle)
+                spinning: bool = False
+                normalized_angle: int = angle % 360 # wybór gracza
+                winning_player: int = (int((normalized_angle // (360 / n_players)) % n_players) - 1) % n_players
+                screen.fill((255, 255, 255)) # rysowanie ekranu, graczy i butelki
+                draw_players(screen, width, height, n_players, player_names, winning_player)
+                screen.blit(rotated_image, rotated_rect)
+                pygame.display.flip()
+                pytanie_czy_wyzwanie()
+
+        rotated_image, rotated_rect = rotate(bottle_image, angle, bottle_rect.center, pygame.Vector2(0, 0))
+
+        # Rysowanie stanu gry na ekranie
+        screen.fill((255, 255, 255))
+        draw_players(screen, width, height, n_players, player_names, winning_player)
+        screen.blit(rotated_image, rotated_rect)
+        pygame.display.flip()
+
+        # Ustawienie liczby klatek na sekundę
+        pygame.time.Clock().tick(60)
+
+
+if _name_ == '_main_':
+    pygame.init()
+    main()
+    pygame.quit()
+    sys.exit()
